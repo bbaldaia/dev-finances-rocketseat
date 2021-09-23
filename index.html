@@ -121,15 +121,33 @@
                     <div class="input-group">
                         <label 
                             class="sr-only"
-                            for="amount">Descrição</label>
+                            for="amount">Valor</label>
                         <input
                         type="number"
+                        step="0.01"
                         id="amount"
                         name="amount"
-                        placeholder="Descrição"
+                        placeholder="00,00"
+                        />
+                        <small class="help">Use o sinal - (negativo) para despesas e , (vírgula) para casas decimais</small>
+                    </div>
+
+                    <div class="input-group">
+                        <label 
+                            class="sr-only"
+                            for="date">Data</label>
+                        <input
+                        type="date"
+                        id="date"
+                        name="date"
+                        placeholder="01/01/2021"
                         />
                     </div>
 
+                    <div class="input-group actions">
+                        <a href="#" class="button cancel">Cancelar</a>
+                        <button>Salvar</button>
+                    </div>
                 </form>
             </div>
         </div>
