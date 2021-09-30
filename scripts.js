@@ -8,32 +8,27 @@ const Modal = {
     }
 }
 
+const Storage = {
+    get() {
+        return JSON.parse(localStorage.getItem("dev.finances:transactions")) || []
+    },
+
+    set(transactions) {
+        localStorage.setItem("dev.finances:transactions", JSON.stringify(transactions))
+    }
+}
+
 const Transaction = {
-    all: [
-        {
-            description: 'Luz',
-            amount: -50001,
-            date: '23/01/2021'
-        },
-        {
-            description: 'Website',
-            amount: 500000,
-            date: '23/01/2021'
-        },
-        {
-            description: 'Internet',
-            amount: -20012,
-            date: '23/01/2021',
-        },
-        {
-            description: 'App',
-            amount: 200000,
-            date: '23/01/2021',
-        }
-    ],    
+    all: Storage.get(),
 
     add(transaction) {
         Transaction.all.push(transaction)
+
+        App.reload()
+    },
+
+    remove(index) {
+        Transaction.all.splice(index, 1)
 
         App.reload()
     },
@@ -42,7 +37,7 @@ const Transaction = {
         let income = 0
         //pegar todas as transacoes 
         //para cada transacao,
-        transactions.forEach(transaction =>  {
+        Transaction.all.forEach(transaction =>  {
             //se ela for maior que zero 
             if (transaction.amount > 0) {
                 //somar a uma variavel e retornar a variavel 
@@ -56,7 +51,7 @@ const Transaction = {
         let expense = 0
         //pegar todas as transacoes 
         //para cada transacao,
-        transactions.forEach(transaction => {
+        Transaction.all.forEach(transaction => {
             //se ela for menor que zero
             if (transaction.amount < 0) {
                 //somar a uma variavel e retornar a variavel
@@ -76,13 +71,14 @@ const DOM = {
     
     addTransaction(transaction, index) {
         const tr = document.createElement('tr')
-        tr.innerHTML = DOM.innerHTMLTransaction(transaction)
+        tr.innerHTML = DOM.innerHTMLTransaction(transaction, index)
+        tr.dataset.index = index
         // Adicionando dentro do recém criado tr (table row) os 
         // elementos td que estão na função innerHTMLTransaction
         DOM.transactionsContainer.appendChild(tr)
     },
 
-    innerHTMLTransaction(transaction) {
+    innerHTMLTransaction(transaction, index) {
         const CSSclass = transaction.amount > 0 ? "income" : "expense"
         const amount = Utils.formatCurrency(transaction.amount)
         const html = `
@@ -90,7 +86,7 @@ const DOM = {
             <td class="${CSSclass}">${amount}</td>
             <td class="date">${transaction.date}</td>
             <td>
-                <img src="./assets/minus.svg" alt="Remover transação">
+                <img onclick="Transaction.remove(${index})" src="./assets/minus.svg" alt="Remover transação">
             </td>
         `
         // Retornando os elementos td. Nesse caso precisa ter o mesmo nome da constante
@@ -115,6 +111,17 @@ const DOM = {
 }
 
 const Utils = {
+    formatAmount(value){
+        value = Number(value.replace(/\,\./g, "")) * 100
+
+        return value
+    },
+
+    formatDate(date) {
+        const splittedDate = date.split("-")
+        return `${splittedDate[2]}/${splittedDate[1]}/${splittedDate[0]}`
+    },
+    
     formatCurrency(value) {
         const signal = Number(value) < 0 ? "-" : ""
         value = String(value).replace(/\D/g, "")
@@ -128,31 +135,72 @@ const Utils = {
 }
 
 const Form = {    
+    description: document.querySelector('#description'),
+    amount: document.querySelector('#amount'),
+    date: document.querySelector('#date'),
 
-    formatData() {
-        console.log('formatei')
+    getValues() {
+        return {
+            description: Form.description.value,
+            amount: Form.amount.value,
+            date: Form.date.value
+        }
+    },
+    
+    validateFields() {
+        const { description, amount, date } = Form.getValues()
+
+        //trim = tira espaços vazios de uma string
+        //abaixo, se ele varre uma string vazia, o resultado é vazio
+        if (description.trim() === "" ||
+            amount.trim() === "" ||
+            date.trim() === "") {
+                throw new Error("Por favor, preencha todos os campos!")
+            }
     },
 
-    validateFields() {
-        console.log('validei')
+    formatValues() {
+        let { description, amount, date } = Form.getValues()
+
+        amount = Utils.formatAmount(amount)
+
+        date = Utils.formatDate(date) 
+
+        return {
+            description,
+            amount,
+            date
+        }
+    },
+
+    clearFields(){
+        Form.description.value = ""
+        Form.amount.value = ""
+        Form.date.value = ""
     },
     
     submit(event) {
         event.preventDefault()
-
-        //validar se todos os campos do modal foram preenchidos
-        Form.validateFields()
-        //formatar os dados para salvar
-        Form.formatData()
+        
+        try {
+            Form.validateFields()
+            const transaction = Form.formatValues()
+            Transaction.add(transaction)
+            Form.clearFields()
+            Modal.close()
+        } catch(error) {
+            alert(error.message)
+        }
     }
 }
 
 const App = {
     init() {
-        Transaction.all.forEach(transaction => {
-            DOM.addTransaction(transaction)
-        })
-        DOM.updateBalance
+        Transaction.all.forEach(DOM.addTransaction)
+
+        DOM.updateBalance()
+
+        Storage.set(Transaction.all)
     },
 
     reload() {
