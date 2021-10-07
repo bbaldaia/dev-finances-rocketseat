@@ -1,2 +1,2 @@
 # dev-finances-rocketseat
-Página web de controle financeiro feito no curso Discover da Rocketseat (HTML + CSS + JavaScript).
+Página web de controle financeiro feito na maratona Discover da Rocketseat (HTML + CSS + JavaScript).
