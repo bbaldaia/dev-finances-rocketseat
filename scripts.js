@@ -1,4 +1,6 @@
 const Modal = {
+    //uma função dentro de um objeto
+    //se chama MÉTODO
     open() {
         document.querySelector('.modal-overlay').classList.add('active')
     },
@@ -14,12 +16,13 @@ const Storage = {
     },
 
     set(transactions) {
-        localStorage.setItem("dev.finances:transactions", JSON.stringify(transactions))
+        localStorage.setItem("dev.finances:transactions", JSON.stringify(transactions))  
     }
 }
 
 const Transaction = {
     all: Storage.get(),
+    //todas as transações registradas pelo usuário 
 
     add(transaction) {
         Transaction.all.push(transaction)
@@ -80,15 +83,18 @@ const DOM = {
 
     innerHTMLTransaction(transaction, index) {
         const CSSclass = transaction.amount > 0 ? "income" : "expense"
+        //operador ternário 
         const amount = Utils.formatCurrency(transaction.amount)
-        const html = `
+        const html = 
+            //template literals
+            `
             <td class="description">${transaction.description}</td>
             <td class="${CSSclass}">${amount}</td>
             <td class="date">${transaction.date}</td>
             <td>
                 <img onclick="Transaction.remove(${index})" src="./assets/minus.svg" alt="Remover transação">
             </td>
-        `
+            `
         // Retornando os elementos td. Nesse caso precisa ter o mesmo nome da constante
         return html
     },
@@ -210,8 +216,3 @@ const App = {
 }
 
 App.init()
-
-
-//pesquisar arrow function
-//foreach
-//e dois pontos no javascript
